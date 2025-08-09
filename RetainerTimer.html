@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リテイナータイマー</title>
+<style type="text/css">
+body, input, button, select {
+	font-size:16pt;
+}
+
+body {
+	width: 1280px;
+}
+
+.retainer-box {
+	margin:8px;
+	width:20em;
+	padding:12px;
+	border:1px solid silver;
+	border-radius:16px;
+	background-color:lightgreen;
+}
+
+progress {
+	width:200px;
+	height:40px;
+	vertical-align: middle;
+	margin:0 8px;
+}
+
+.startStopBtn {
+	height:40px;
+	padding-left:16px;
+	padding-right:16px;
+	border-radius:8px;
+	cursor:pointer;
+}
+
+#retainer-box-template { 
+	display:none;
+}
+
+</style>
+<script type="text/javascript">
+
+window.addEventListener("load", () => {
+	document.getElementById("retainerCnt").addEventListener("change", (ev) => {
+		let cnt = parseInt(ev.target.value);
+		let container = document.querySelector("#retainer-box-area");
+		while (container.firstChild) {
+			container.removeChild(container.firstChild);
+		}
+		
+		let templateDiv = document.querySelector("#retainer-box-template");
+		
+		for (let i = 0; i < cnt; i++) {
+			let div = templateDiv.cloneNode(true);
+			div.setAttribute("id", "retainer-" + i);
+			container.appendChild(div);
+		}
+		
+	});
+	
+	document.body.addEventListener("click", (ev) => {
+		let src = ev.target;
+		if (src.classList.contains("startStopBtn")) {
+			let div = src.parentElement;
+			if (src.getAttribute("data-state") == "stop") {
+				// 停止⇒開始
+				src.textContent = "STOP";
+				startTimer(div, parseInt(div.querySelector(".retainerTime").value));
+				
+			}
+		}
+	});
+});
+
+function startTimer(div, retainerMinutes) {
+	let progress = div.querySelector(".progress");
+	let label = div.querySelector(".remain-label");
+	
+	progress.value = 3600 - retainerMinutes * 60;
+	label.textContent = "残り：" + retainerMinutes + "分";
+	let completeTime = new Date().getTime() + retainerMinutes * 60000;
+	
+	let timerId = setInterval(() => {
+		let remainSeconds = Math.round((completeTime - new Date().getTime()) / 1000);
+		if (remainSeconds < 1) {
+			stopTimer(div);
+			speak("リテイナーかえってきた");
+		}
+		progress.value = 3600 - remainSeconds;
+		let remainMin = (remainSeconds - (remainSeconds % 60)) / 60;
+		label.textContent = remainMin + "分" + (remainSeconds % 60) + "秒";
+		
+	}, 10000);
+	
+	div.setAttribute("data-timer-id", timerId);
+}
+
+function stopTimer(div) {
+	let btn = div.querySelector(".startStopBtn");
+	btn.setAttribute("data-state", "stop");
+	btn.textContent = "START";
+	
+	clearTimeout(parseInt(div.getAttribute("data-timer-id")));
+	
+}
+
+function speak(txt) {
+
+	speechSynthesis.speak(new SpeechSynthesisUtterance(txt));
+}
+
+</script>
+</head>
+<body style="height:100%;">
+<div>
+	リテイナー数：<select id="retainerCnt">
+		<option value=""></option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+		<option value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="10">10</option>
+	</select>
+</div>
+<div id="retainer-box-area"></div>
+
+
+<div id="retainer-box-template" class="retainer-box">
+	収集時間<select class="retainerTime"><option value="60">60分</option>
+	<option value="50">50分</option>
+	<option value="40">40分</option>
+	<option value="30">50分</option>
+	<option value="1">1分</option>
+	</select>
+	<button type="button" class="startStopBtn" data-state="stop">START</button><br>
+	<progress class="progress" max="3600" value="10" style=""></progress><span class="remain-label"></span>
+</div>
+</body>
+</html>
+
