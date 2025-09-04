@@ -11,6 +11,8 @@ body, input, button, select {
 
 body {
 	width: 1280px;
+	background-color:black;
+	color:white;
 }
 
 .retainer-box {
@@ -45,8 +47,8 @@ progress {
 <script type="text/javascript">
 
 window.addEventListener("load", () => {
-	document.getElementById("retainerCnt").addEventListener("change", (ev) => {
-		let cnt = parseInt(ev.target.value);
+	document.getElementById("btnSetCount").addEventListener("click", (ev) => {
+		let cnt = parseInt(document.querySelector("#retainerCnt").value);
 		let container = document.querySelector("#retainer-box-area");
 		while (container.firstChild) {
 			container.removeChild(container.firstChild);
@@ -68,9 +70,10 @@ window.addEventListener("load", () => {
 			let div = src.parentElement;
 			if (src.getAttribute("data-state") == "stop") {
 				// 停止⇒開始
-				src.textContent = "STOP";
 				startTimer(div, parseInt(div.querySelector(".retainerTime").value));
 				
+			}else {
+				stopTimer(div);
 			}
 		}
 	});
@@ -79,6 +82,9 @@ window.addEventListener("load", () => {
 function startTimer(div, retainerMinutes) {
 	let progress = div.querySelector(".progress");
 	let label = div.querySelector(".remain-label");
+	let btn = div.querySelector(".startStopBtn");
+	btn.setAttribute("data-state", "running");
+	btn.textContent = "STOP";
 	
 	progress.value = 3600 - retainerMinutes * 60;
 	label.textContent = "残り：" + retainerMinutes + "分";
@@ -88,12 +94,13 @@ function startTimer(div, retainerMinutes) {
 		let remainSeconds = Math.round((completeTime - new Date().getTime()) / 1000);
 		if (remainSeconds < 1) {
 			stopTimer(div);
+			label.textContent = "完了";
 			speak("リテイナーかえってきた");
+		}else {
+			progress.value = 3600 - remainSeconds;
+			let remainMin = (remainSeconds - (remainSeconds % 60)) / 60;
+			label.textContent = remainMin + "分" + (remainSeconds % 60) + "秒";
 		}
-		progress.value = 3600 - remainSeconds;
-		let remainMin = (remainSeconds - (remainSeconds % 60)) / 60;
-		label.textContent = remainMin + "分" + (remainSeconds % 60) + "秒";
-		
 	}, 10000);
 	
 	div.setAttribute("data-timer-id", timerId);
@@ -129,6 +136,7 @@ function speak(txt) {
 		<option value="9">9</option>
 		<option value="10">10</option>
 	</select>
+	<button id="btnSetCount" type="button">設定/リセット</button>
 </div>
 <div id="retainer-box-area"></div>
 
@@ -137,8 +145,7 @@ function speak(txt) {
 	収集時間<select class="retainerTime"><option value="60">60分</option>
 	<option value="50">50分</option>
 	<option value="40">40分</option>
-	<option value="30">50分</option>
-	<option value="1">1分</option>
+	<option value="30">30分</option>
 	</select>
 	<button type="button" class="startStopBtn" data-state="stop">START</button><br>
 	<progress class="progress" max="3600" value="10" style=""></progress><span class="remain-label"></span>
