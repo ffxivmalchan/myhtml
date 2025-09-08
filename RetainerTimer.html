@@ -33,9 +33,24 @@ body {
 	margin:8px;
 	width:calc(100% - 16px);
 	padding:12px;
-	border:1px solid silver;
+	border:2px solid silver;
 	border-radius:16px;
 }
+
+.submarine-box {
+	margin:8px;
+	width:calc(100% - 16px);
+	padding:12px;
+	border:2px solid yellow;
+	border-radius:16px;
+}
+
+
+.submarineMin,
+.submarineHr {
+	width:2.5em;
+}
+
 .retainer-box.complete {
 	background-color:red;
 	color:yellow;
@@ -49,7 +64,8 @@ body {
 	cursor:pointer;
 }
 
-#retainer-box-template { 
+#retainer-box-template,
+#submarine-box-template { 
 	display:none;
 }
 
@@ -57,21 +73,41 @@ body {
 <script type="text/javascript">
 
 window.addEventListener("load", () => {
+	getWakeLock();
+	document.addEventListener("visibilitychange", window.getWakeLock);
+	
 	document.getElementById("btnSetCount").addEventListener("click", (ev) => {
 		let cnt = parseInt(document.querySelector("#retainerCnt").value);
 		let container = document.querySelector("#retainer-box-area");
-		while (container.firstChild) {
-			container.removeChild(container.firstChild);
-		}
+		let riteCnt = 0;
+		container.querySelectorAll(".retainer-box").forEach((div) => {
+			riteCnt++;
+			if (riteCnt > cnt) {
+				let timerId = div.getAttribute("data-timer-id");
+				if (timerId != null) clearInterval(parseInt(timerId, 10));
+				
+				container.removeChild(div);
+				
+			}
+		});
 		
 		let templateDiv = document.querySelector("#retainer-box-template");
 		
-		for (let i = 0; i < cnt; i++) {
+		for (let i = riteCnt; i < cnt; i++) {
 			let div = templateDiv.cloneNode(true);
 			div.setAttribute("id", "retainer-" + i);
 			container.appendChild(div);
 		}
 		
+	});
+	
+	document.getElementById("btnAddSubmarine").addEventListener("click", (ev) => {
+		let container = document.querySelector("#retainer-box-area");
+	
+		let div = document.querySelector("#submarine-box-template").cloneNode(true);
+		div.removeAttribute("id");
+		
+		container.appendChild(div);
 	});
 	
 	document.body.addEventListener("click", (ev) => {
@@ -80,7 +116,17 @@ window.addEventListener("load", () => {
 			let div = src.parentElement;
 			if (src.getAttribute("data-state") == "stop") {
 				// 停止⇒開始
-				startTimer(div, parseInt(div.querySelector(".retainerTime").value));
+				let remainTime = 0;
+				if (src.classList.contains("submarine")) {
+					
+					if (div.querySelector(".submarineHr").value == "") div.querySelector(".submarineHr").value = "0";
+					if (div.querySelector(".submarineMin").value == "") div.querySelector(".submarineMin").value = "0";
+					
+					remainTime = parseInt(div.querySelector(".submarineHr").value, 10) * 60 + parseInt(div.querySelector(".submarineMin").value, 10);
+				}else {
+					remainTime = parseInt(div.querySelector(".retainerTime").value);
+				}
+				startTimer(div, remainTime);
 				
 			}else {
 				stopTimer(div);
@@ -89,6 +135,15 @@ window.addEventListener("load", () => {
 	});
 });
 
+var wakeLock = null;
+async function getWakeLock() {
+	try {
+		window.wakeLock = await navigator.wakeLock.request("screen");
+	}catch (err) {
+		console.log("WakeLock獲得失敗");
+	}
+};
+
 function startTimer(div, retainerMinutes) {
 	let label = div.querySelector(".remain-label");
 	let btn = div.querySelector(".startStopBtn");
@@ -96,7 +151,7 @@ function startTimer(div, retainerMinutes) {
 	btn.setAttribute("data-state", "running");
 	btn.textContent = "STOP";
 	
-	label.textContent = "残り：" + retainerMinutes + "分";
+	label.textContent = "Starting";
 	let completeTime = new Date().getTime() + retainerMinutes * 60000;
 	
 	let timerId = setInterval(() => {
@@ -107,12 +162,24 @@ function startTimer(div, retainerMinutes) {
 			speak("リテイナーかえってきた");
 			div.classList.add("complete");
 		}else {
-			let remainMin = (remainSeconds - (remainSeconds % 60)) / 60;
-			label.textContent = remainMin + "分" + (remainSeconds % 60) + "秒";
+			label.textContent = formatRemainTime(remainSeconds);
 		}
 	}, 10000);
 	
 	div.setAttribute("data-timer-id", timerId);
+}
+
+function formatRemainTime(remainSeconds) {
+	let hr = (remainSeconds - (remainSeconds % 3600)) / 3600;
+	let min = (remainSeconds - (remainSeconds % 60)) / 60 - (hr * 60);
+	let sec = remainSeconds % 60;
+	
+	
+	if (hr > 0) {
+		return hr + "時間" + min + "分" + sec + "秒";
+	}else {
+		return min + "分" + sec + "秒";
+	}
 }
 
 function stopTimer(div) {
@@ -145,6 +212,7 @@ function speak(txt) {
 		<option value="10">10</option>
 	</select>
 	<button id="btnSetCount" type="button">設定/リセット</button>
+	<button id="btnAddSubmarine" type="button">潜水艦追加</button>
 </div>
 <div id="retainer-box-area"></div>
 
@@ -158,6 +226,40 @@ function speak(txt) {
 	<button type="button" class="startStopBtn" data-state="stop">START</button><br>
 	<span class="remain-label"></span>
 </div>
+
+
+<div id="submarine-box-template" class="submarine-box">
+	残り時間：<input type="number" class="submarineHr" name="submarineHr" min="0" max="24">時間<input type="number" class="submarineMin" name="submarineMin" min="0" max="60">分
+	<button type="button" class="startStopBtn submarine" data-state="stop">START</button><br>
+	<span class="remain-label"></span>
+</div>
+
+<datalist id="hrList">
+	<option value="0"></option>
+	<option value="1"></option>
+	<option value="2"></option>
+	<option value="3"></option>
+	<option value="4"></option>
+	<option value="5"></option>
+	<option value="6"></option>
+	<option value="7"></option>
+	<option value="8"></option>
+	<option value="9"></option>
+	<option value="10"></option>
+	<option value="11"></option>
+	<option value="12"></option>
+	<option value="13"></option>
+	<option value="14"></option>
+	<option value="15"></option>
+	<option value="16"></option>
+	<option value="17"></option>
+	<option value="18"></option>
+	<option value="19"></option>
+	<option value="20"></option>
+	<option value="21"></option>
+	<option value="22"></option>
+	<option value="23"></option>
+</datalist>
 </body>
 </html>
 
