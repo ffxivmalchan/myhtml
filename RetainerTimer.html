@@ -51,7 +51,8 @@ body {
 	width:2.5em;
 }
 
-.retainer-box.complete {
+.retainer-box.complete, 
+.submarine-box.complete {
 	background-color:red;
 	color:yellow;
 }
@@ -159,7 +160,11 @@ function startTimer(div, retainerMinutes) {
 		if (remainSeconds < 1) {
 			stopTimer(div);
 			label.textContent = "完了";
-			speak("リテイナーかえってきた");
+			if (div.classList.contains("submarine-box")) {
+				speak("潜水艦、潜水艦、潜水艦");
+			}else {
+				speak("リテイナーかえってきた");
+			}
 			div.classList.add("complete");
 		}else {
 			label.textContent = formatRemainTime(remainSeconds);
