@@ -25,7 +25,7 @@ body, input, button, select {
 }
 
 .remain-label {
-	font-size:40pt;
+	font-size:32pt;
 }
 
 
@@ -152,6 +152,7 @@ function startTimer(div, retainerMinutes) {
 	div.classList.remove("complete");
 	btn.setAttribute("data-state", "running");
 	btn.textContent = "STOP";
+	div.classList.add("running");
 	
 	label.textContent = "Starting";
 	let completeTime = new Date().getTime() + retainerMinutes * 60000;
@@ -184,7 +185,7 @@ function formatRemainTime(remainSeconds) {
 	
 	
 	if (hr > 0) {
-		return hr + "時間" + min + "分" + sec + "秒";
+		return hr + "時間" + min + "分";
 	}else {
 		return min + "分" + sec + "秒";
 	}
@@ -194,8 +195,11 @@ function stopTimer(div) {
 	let btn = div.querySelector(".startStopBtn");
 	btn.setAttribute("data-state", "stop");
 	btn.textContent = "START";
+	div.classList.remove("running");
 	
 	clearTimeout(parseInt(div.getAttribute("data-timer-id")));
+	
+	div.classList.remove("running");
 }
 
 function speak(txt) {
