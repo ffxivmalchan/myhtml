@@ -14,7 +14,7 @@
 	}
 	
 	body, input, button, select {
-		font-size:24pt;
+		font-size:18pt;
 	}
 
 
@@ -55,6 +55,9 @@ body {
 	border-radius:16px;
 }
 
+.submarine-box.running .remain-ttime-div {
+	display:none;
+}
 
 .submarineMin,
 .submarineHr {
@@ -181,9 +184,9 @@ function formatRemainTime(remainSeconds) {
 	
 	
 	if (hr > 0) {
-		return hr + "Hr" + min + "min" + sec + "s";
+		return hr + "時間" + min + "分" + sec + "秒";
 	}else {
-		return min + "min" + sec + "s";
+		return min + "分" + sec + "秒";
 	}
 }
 
@@ -211,7 +214,7 @@ function speak(txt) {
 
 
 <div id="retainer-box-template" class="retainer-box">
-	収集時間<select class="retainerTime"><option value="60">60分</option>
+	<div class="remain-ttime-div">収集時間：<select class="retainerTime"><option value="60">60分</option></div>
 	<option value="50">50分</option>
 	<option value="40">40分</option>
 	<option value="30">30分</option>
@@ -222,7 +225,7 @@ function speak(txt) {
 
 
 <div id="submarine-box-template" class="submarine-box">
-	残り時間：<input type="number" class="submarineHr" name="submarineHr" min="0" max="24">時間<input type="number" class="submarineMin" name="submarineMin" min="0" max="60">分
+	<div class="remain-ttime-div">残り時間：<input type="number" class="submarineHr" name="submarineHr" min="0" max="24">時間<input type="number" class="submarineMin" name="submarineMin" min="0" max="60">分</div>
 	<button type="button" class="startStopBtn submarine" data-state="stop">START</button><br>
 	<span class="remain-label"></span>
 </div>
