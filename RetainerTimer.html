@@ -167,12 +167,12 @@ function startTimer(div, retainerMinutes) {
 		if (remainSeconds < 1) {
 			stopTimer(div);
 			label.textContent = "完了";
+			div.classList.add("complete");
 			if (isSubmarine) {
 				speak("潜水艦、潜水艦、潜水艦");
 			}else {
 				speak("リテイナーかえってきた");
 			}
-			div.classList.add("complete");
 		}else {
 			label.textContent = (isSubmarine ? "潜：" : "リテ：") + formatRemainTime(remainSeconds);
 		}
