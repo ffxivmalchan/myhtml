@@ -19,9 +19,6 @@
 
 
 }
-html, body {
-	width:1024px;
-}
 
 body, input, button, select {
 	font-size:16pt;
@@ -170,7 +167,7 @@ function startTimer(div, retainerMinutes) {
 			}
 			div.classList.add("complete");
 		}else {
-			label.textContent = (isSubmarine ? "潜水艦：" : "リテ：") + formatRemainTime(remainSeconds);
+			label.textContent = (isSubmarine ? "潜：" : "リテ：") + formatRemainTime(remainSeconds);
 		}
 	}, 10000);
 	
@@ -184,9 +181,9 @@ function formatRemainTime(remainSeconds) {
 	
 	
 	if (hr > 0) {
-		return hr + "時間" + min + "分" + sec + "秒";
+		return hr + "Hr" + min + "min" + sec + "s";
 	}else {
-		return min + "分" + sec + "秒";
+		return min + "min" + sec + "s";
 	}
 }
 
