@@ -6,6 +6,19 @@
 <title>リテイナータイマー</title>
 <style type="text/css">
 
+@media screen and (max-width: 480px) {
+	/* スマホ用 */
+	.retainer-box,
+	.submarine-box {
+		width:98vw;
+	}
+	
+	body, input, button, select {
+		font-size:24pt;
+	}
+
+
+}
 html, body {
 	width:1024px;
 }
@@ -77,33 +90,21 @@ window.addEventListener("load", () => {
 	getWakeLock();
 	document.addEventListener("visibilitychange", window.getWakeLock);
 	
-	document.getElementById("btnSetCount").addEventListener("click", (ev) => {
-		let cnt = parseInt(document.querySelector("#retainerCnt").value);
+	document.getElementById("btnAddRetainer").addEventListener("click", (ev) => {
 		let container = document.querySelector("#retainer-box-area");
-		let riteCnt = 0;
-		container.querySelectorAll(".retainer-box").forEach((div) => {
-			riteCnt++;
-			if (riteCnt > cnt) {
-				let timerId = div.getAttribute("data-timer-id");
-				if (timerId != null) clearInterval(parseInt(timerId, 10));
-				
-				container.removeChild(div);
-				
-			}
-		});
+		let currentCnt = container.querySelectorAll(".retainer-box").length;
 		
 		let templateDiv = document.querySelector("#retainer-box-template");
 		
-		for (let i = riteCnt; i < cnt; i++) {
-			let div = templateDiv.cloneNode(true);
-			div.setAttribute("id", "retainer-" + i);
-			container.appendChild(div);
-		}
+		let div = templateDiv.cloneNode(true);
+		div.setAttribute("id", "retainer-" + currentCnt);
+		container.appendChild(div);
 		
 	});
 	
 	document.getElementById("btnAddSubmarine").addEventListener("click", (ev) => {
 		let container = document.querySelector("#retainer-box-area");
+		let currentCnt = container.querySelectorAll(".submarine-box").length;
 	
 		let div = document.querySelector("#submarine-box-template").cloneNode(true);
 		div.removeAttribute("id");
@@ -155,19 +156,21 @@ function startTimer(div, retainerMinutes) {
 	label.textContent = "Starting";
 	let completeTime = new Date().getTime() + retainerMinutes * 60000;
 	
+	let isSubmarine = div.classList.contains("submarine-box");
+	
 	let timerId = setInterval(() => {
 		let remainSeconds = Math.round((completeTime - new Date().getTime()) / 1000);
 		if (remainSeconds < 1) {
 			stopTimer(div);
 			label.textContent = "完了";
-			if (div.classList.contains("submarine-box")) {
+			if (isSubmarine) {
 				speak("潜水艦、潜水艦、潜水艦");
 			}else {
 				speak("リテイナーかえってきた");
 			}
 			div.classList.add("complete");
 		}else {
-			label.textContent = formatRemainTime(remainSeconds);
+			label.textContent = (isSubmarine ? "潜水艦：" : "リテ：") + formatRemainTime(remainSeconds);
 		}
 	}, 10000);
 	
@@ -204,19 +207,7 @@ function speak(txt) {
 </head>
 <body style="height:100%;">
 <div>
-	リテイナー数：<select id="retainerCnt">
-		<option value=""></option>
-		<option value="2">2</option>
-		<option value="3">3</option>
-		<option value="4">4</option>
-		<option value="5">5</option>
-		<option value="6">6</option>
-		<option value="7">7</option>
-		<option value="8">8</option>
-		<option value="9">9</option>
-		<option value="10">10</option>
-	</select>
-	<button id="btnSetCount" type="button">設定/リセット</button>
+	<button id="btnAddRetainer" type="button">リテイナー追加</button>
 	<button id="btnAddSubmarine" type="button">潜水艦追加</button>
 </div>
 <div id="retainer-box-area"></div>
