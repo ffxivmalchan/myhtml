@@ -42,43 +42,50 @@ body {
 	color:white;
 }
 
-.retainer-box {
+.timer-box {
 	margin:8px;
 	width:calc(100% - 16px);
 	padding:12px;
-	border:2px solid silver;
 	border-radius:16px;
 }
 
+.retainer-box {
+	border:2px solid silver;
+}
+
 .submarine-box {
-	margin:8px;
-	width:calc(100% - 16px);
-	padding:12px;
 	border:2px solid yellow;
-	border-radius:16px;
+}
+
+.remain-ttime-div {
+	display:inline-block;
 }
 
 .submarine-box.running .remain-ttime-div {
 	display:none;
 }
 
+.retainerTime,
 .submarineMin,
 .submarineHr {
 	width:2.5em;
 }
 
-.retainer-box.complete, 
-.submarine-box.complete {
+.timer-box.complete {
 	background-color:red;
 	color:yellow;
 }
 
-.startStopBtn {
-	height:40px;
+.timer-box button {
 	padding-left:16px;
 	padding-right:16px;
+	height:40px;
 	border-radius:8px;
 	cursor:pointer;
+	
+}
+
+.startStopBtn {
 }
 
 #retainer-box-template,
@@ -92,6 +99,20 @@ body {
 window.addEventListener("load", () => {
 	getWakeLock();
 	document.addEventListener("visibilitychange", window.getWakeLock);
+	window.addEventListener("focusin", (ev) => {
+		if (ev.target.tagName == "INPUT" && ev.target.type == "number") {
+			let txt = ev.target;
+			txt.setAttribute("data-orgval", txt.value);
+			txt.value = "";
+			
+		}
+	});
+	window.addEventListener("focusout", (ev) => {
+		if (ev.target.tagName == "INPUT" && ev.target.getAttribute("data-orgval") != null) {
+			let txt = ev.target;
+			if (txt.value == "" ) txt.value = txt.getAttribute("data-orgval");
+		}
+	});
 	
 	document.getElementById("btnAddRetainer").addEventListener("click", (ev) => {
 		let container = document.querySelector("#retainer-box-area");
@@ -119,6 +140,10 @@ window.addEventListener("load", () => {
 		let src = ev.target;
 		if (src.classList.contains("startStopBtn")) {
 			let div = src.parentElement;
+			while (div.classList.contains("timer-box") == false) {
+				div = div.parentElement;
+			}
+			
 			if (src.getAttribute("data-state") == "stop") {
 				// 停止⇒開始
 				let remainTime = 0;
@@ -129,6 +154,7 @@ window.addEventListener("load", () => {
 					
 					remainTime = parseInt(div.querySelector(".submarineHr").value, 10) * 60 + parseInt(div.querySelector(".submarineMin").value, 10);
 				}else {
+					if (div.querySelector(".retainerTime").value == "") div.querySelector(".retainerTime").value = 60;
 					remainTime = parseInt(div.querySelector(".retainerTime").value);
 				}
 				startTimer(div, remainTime);
@@ -157,7 +183,7 @@ function startTimer(div, retainerMinutes) {
 	btn.textContent = "STOP";
 	div.classList.add("running");
 	
-	label.textContent = "Starting";
+	label.textContent = "残り：" + retainerMinutes + "分";
 	let completeTime = new Date().getTime() + retainerMinutes * 60000;
 	
 	let isSubmarine = div.classList.contains("submarine-box");
@@ -200,7 +226,7 @@ function stopTimer(div) {
 	btn.textContent = "START";
 	div.classList.remove("running");
 	
-	clearTimeout(parseInt(div.getAttribute("data-timer-id")));
+	clearTimeout(parseInt(div.getAttribute("data-timer-id"), 0));
 	
 	div.classList.remove("running");
 }
@@ -220,22 +246,25 @@ function speak(txt) {
 <div id="retainer-box-area"></div>
 
 
-<div id="retainer-box-template" class="retainer-box">
-	<div class="remain-ttime-div">収集時間：<select class="retainerTime"><option value="60">60分</option></div>
-	<option value="50">50分</option>
-	<option value="40">40分</option>
-	<option value="30">30分</option>
-	</select>
-	<button type="button" class="startStopBtn" data-state="stop">START</button><br>
+<div id="retainer-box-template" class="retainer-box timer-box">
+	<div class="remain-ttime-div">収集時間：<input type="number" list="retainer-times" class="retainerTime">分</div>
+	<button type="button" class="startStopBtn" data-state="stop">START</button><button type="button" class="delBtn">消</button>
 	<span class="remain-label"></span>
 </div>
 
 
-<div id="submarine-box-template" class="submarine-box">
-	<div class="remain-ttime-div">残り時間：<input type="number" class="submarineHr" name="submarineHr" min="0" max="24">時間<input type="number" class="submarineMin" name="submarineMin" min="0" max="60">分</div>
-	<button type="button" class="startStopBtn submarine" data-state="stop">START</button><br>
+<div id="submarine-box-template" class="submarine-box timer-box">
+	<div class="remain-ttime-div">時間：<input type="number" class="submarineHr" name="submarineHr" min="0" max="24">時間<input type="number" class="submarineMin" name="submarineMin" min="0" max="60">分</div>
+	<button type="button" class="startStopBtn submarine" data-state="stop">START</button><button type="button" class="delBtn">消</button>
 	<span class="remain-label"></span>
 </div>
+
+<datalist id="retainer-times">
+	<option value="60"></option>
+	<option value="50"></option>
+	<option value="40"></option>
+	<option value="30"></option>
+</datalist>
 
 </body>
 </html>
