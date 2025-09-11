@@ -138,7 +138,15 @@ window.addEventListener("load", () => {
 	
 	document.body.addEventListener("click", (ev) => {
 		let src = ev.target;
-		if (src.classList.contains("startStopBtn")) {
+		if (src.classList.contains("delBtn")) {
+			let div = src.parentElement;
+			while (div.classList.contains("timer-box") == false) {
+				div = div.parentElement;
+			}
+			
+			div.parentElement.removeChild(div);
+			
+		}else if (src.classList.contains("startStopBtn")) {
 			let div = src.parentElement;
 			while (div.classList.contains("timer-box") == false) {
 				div = div.parentElement;
