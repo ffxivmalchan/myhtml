@@ -93,26 +93,27 @@ body {
 	display:none;
 }
 
+.retainer-dlg-time-panel {
+	width:90%;
+	text-align:center;
+	font-size:32pt;
+	cursor:pointer;
+	text-decoration:underline;
+	background-color:black;
+	color:yellow;
+	padding:8px;;
+	margin:1vh;
+	border-radius:20px;
+	
+}
 </style>
 <script type="text/javascript">
+
+var dialogTargetInput = null;
 
 window.addEventListener("load", () => {
 	getWakeLock();
 	document.addEventListener("visibilitychange", window.getWakeLock);
-	window.addEventListener("focusin", (ev) => {
-		if (ev.target.tagName == "INPUT" && ev.target.type == "number") {
-			let txt = ev.target;
-			txt.setAttribute("data-orgval", txt.value);
-			txt.value = "";
-			
-		}
-	});
-	window.addEventListener("focusout", (ev) => {
-		if (ev.target.tagName == "INPUT" && ev.target.getAttribute("data-orgval") != null) {
-			let txt = ev.target;
-			if (txt.value == "" ) txt.value = txt.getAttribute("data-orgval");
-		}
-	});
 	
 	document.getElementById("btnAddRetainer").addEventListener("click", (ev) => {
 		let container = document.querySelector("#retainer-box-area");
@@ -136,9 +137,24 @@ window.addEventListener("load", () => {
 		container.appendChild(div);
 	});
 	
+	
 	document.body.addEventListener("click", (ev) => {
 		let src = ev.target;
-		if (src.classList.contains("delBtn")) {
+		
+		if (ev.target.tagName == "INPUT" && ev.target.classList.contains("retainerTime")) {
+			window.dialogTargetInput = ev.target;
+			let dlg = document.getElementById("retainer-time-dlg");
+			dlg.showModal();
+			
+		}else if (src.classList.contains("retainer-dlg-time-panel")) {
+			window.dialogTargetInput.value = ev.target.getAttribute("data-value");
+			document.getElementById("retainer-time-dlg").close();
+		}else if (src.id == "btnRetainerTImeSet") {
+			window.dialogTargetInput.value = document.getElementById("retainer-time-dlg-min").value;
+			document.getElementById("retainer-time-dlg").close();
+		}else if (src.id == "retainer-time-close") {
+			document.getElementById("retainer-time-dlg").close();
+		}else if (src.classList.contains("delBtn")) {
 			let div = src.parentElement;
 			while (div.classList.contains("timer-box") == false) {
 				div = div.parentElement;
@@ -267,12 +283,15 @@ function speak(txt) {
 	<span class="remain-label"></span>
 </div>
 
-<datalist id="retainer-times">
-	<option value="60"></option>
-	<option value="50"></option>
-	<option value="40"></option>
-	<option value="30"></option>
-</datalist>
+
+<dialog id="retainer-time-dlg" style="width:80vw;height:80vh;">
+	<div class="retainer-dlg-time-panel" data-value="60">60分</div>
+	<div class="retainer-dlg-time-panel" data-value="50">50分</div>
+	<div class="retainer-dlg-time-panel" data-value="40">40分</div>
+	<div class="retainer-dlg-time-panel" data-value="30">30分</div>
+	<div>時間指定：<input type="number" id="retainer-time-dlg-min" style="width:3em" class="retainer-times">分<button type="button" id="btnRetainerTImeSet">設定</button></div>
+	<button type="button" id="retainer-time-close">閉じる</div>
+</dialog>
 
 </body>
 </html>
